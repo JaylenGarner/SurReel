@@ -14,7 +14,7 @@ class User(models.Model):
 
 class Post(models.Model):
     user = models.ForeignKey(User, related_name ='posts', on_delete=models.CASCADE, db_index=True)
-    caption = models.CharField(max_length=255, blank=True, null=True)
+    caption = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
