@@ -6,6 +6,7 @@ from rest_framework.parsers import JSONParser
 
 from ..models import Post
 from ..serializers import PostSerializer
+from ..exceptions.posts import NoMediaForPost
 
 from .media import create_media
 
@@ -77,6 +78,10 @@ def get_post(post):
 def create_post(request):
     post_data = JSONParser().parse(request)
     media_data = post_data.pop('media', None)
+
+    if media_data == None:
+        raise NoMediaForPost()
+
     post_serializer = PostSerializer(data=post_data)
 
     if post_serializer.is_valid():
