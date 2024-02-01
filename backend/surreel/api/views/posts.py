@@ -7,7 +7,14 @@ from rest_framework.parsers import JSONParser
 from ..models import Post
 from ..serializers import PostSerializer
 
-# View functions
+from .media import create_media
+
+# Exceptions #
+
+class ValidationError(Exception):
+    pass
+
+# View Functions #
 
 """
 Route: '/'
@@ -19,8 +26,10 @@ Route: '/'
 @csrf_exempt
 def post_list(request):
 
+    print('REQUEST', request)
+
     if request.method == 'GET':
-        return get_all_posts(request)
+        return get_all_posts()
 
     elif request.method == 'POST':
         return create_post(request)
@@ -50,9 +59,9 @@ def post_details(request, pk):
         return delete_post(post)
 
 
-#  Helper Functions
+# Helper Functions #
 
-def get_all_posts(request):
+def get_all_posts():
     posts = Post.objects.all()
     serializer = PostSerializer(posts, many=True)
     data_dict = {'posts': serializer.data}
@@ -66,15 +75,19 @@ def get_post(post):
 
 
 def create_post(request):
-    data = JSONParser().parse(request)
-    serializer = PostSerializer(data=data)
+    post_data = JSONParser().parse(request)
+    media_data = post_data.pop('media', None)
+    post_serializer = PostSerializer(data=post_data)
 
-    if serializer.is_valid():
-        serializer.save()
+    if post_serializer.is_valid():
+        post_instance = post_serializer.save()
+        post_id = post_instance.id
 
-        return  JsonResponse(serializer.data, status=201)
+        create_media(media_data, post_id)
 
-    return JsonResponse(serializer.errors, status=400)
+        return  JsonResponse(post_serializer.data, status=201)
+
+    return JsonResponse(post_serializer.errors, status=400)
 
 
 def delete_post(post):
