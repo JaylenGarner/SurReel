@@ -1,32 +1,24 @@
 from rest_framework import serializers
 from .models import User, Post, Media, Like, Follow, Room, Message
 
-from .exceptions.base_exceptions import ValidationError
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password', 'image']
 
 
-class PostSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Post
-        fields = ['id', 'user', 'caption']
-
-
 class MediaSerializer(serializers.ModelSerializer):
-
-    def validate(self, data):
-
-        #test
-        # if True:
-        #     raise ValidationError('No sir nofefeeft today')
-        return data
-
     class Meta:
         model = Media
         fields = ['id', 'post', 'url']
+
+
+class PostSerializer(serializers.ModelSerializer):
+    media = MediaSerializer(many=True, read_only=True, required=False)
+
+    class Meta:
+        model = Post
+        fields = ['id', 'user', 'caption', 'media']
 
 
 class LikeSerializer(serializers.ModelSerializer):

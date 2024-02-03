@@ -10,11 +10,6 @@ from ..exceptions.posts import NoMediaForPost
 
 from .media import create_media
 
-# Exceptions #
-
-class ValidationError(Exception):
-    pass
-
 # View Functions #
 
 """

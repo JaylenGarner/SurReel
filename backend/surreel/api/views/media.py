@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from ..models import Media
 from ..serializers import MediaSerializer
 from ..exceptions.media import MediaLimitExceeded
+from ..exceptions.base_exceptions import ValidationFailed
 
 # View Functions #
 
@@ -23,5 +24,7 @@ def create_media(data, post_id):
 
         if media_serializer.is_valid():
             media_serializer.save()
-
-    return
+            return
+        else:
+            errors = "\n".join([" ".join(errors) for errors in media_serializer.errors.values()])
+            raise ValidationFailed(errors)

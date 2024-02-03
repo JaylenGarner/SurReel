@@ -24,6 +24,6 @@ class BaseCustomException(APIException):
         self.status_code = code
 
 
-class ValidationError(BaseCustomException):
+class ValidationFailed(BaseCustomException):
     def __init__(self, detail):
         super().__init__(detail, status.HTTP_400_BAD_REQUEST)
