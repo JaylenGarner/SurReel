@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import User, Post, Media, Like, Follow, Room, Message
+from django.core.validators import URLValidator
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
