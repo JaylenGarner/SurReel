@@ -1,12 +1,23 @@
 from rest_framework import serializers
 from .models import User, Post, Media, Like, Follow, Room, Message
 from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password', 'image']
+
+    def to_representation(self, value):
+        return {
+            'id': value.id,
+            'username': value.id,
+            'email': value.email,
+            'first_name': value.first_name,
+            'last_name': value.last_name,
+            'image': value.image
+        }
 
 
 class MediaSerializer(serializers.ModelSerializer):
@@ -16,11 +27,12 @@ class MediaSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
     media = MediaSerializer(many=True, read_only=True, required=False)
 
     class Meta:
         model = Post
-        fields = ['id', 'user', 'caption', 'media']
+        fields = ['id', 'user', 'caption', 'media', 'user']
 
 
 class LikeSerializer(serializers.ModelSerializer):

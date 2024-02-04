@@ -15,6 +15,7 @@ class User(models.Model):
     def __str__(self):
         return self.username
 
+
 class Post(models.Model):
     user = models.ForeignKey(User, related_name ='posts', on_delete=models.CASCADE, db_index=True)
     caption = models.TextField(blank=True, null=True)
