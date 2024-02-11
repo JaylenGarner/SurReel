@@ -1,8 +1,5 @@
-from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.parsers import JSONParser
-from rest_framework.serializers import ValidationError
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
@@ -51,7 +48,7 @@ def post_details(request, pk):
 def user_posts(request, pk):
     posts = Post.objects.filter(user=pk)
     serializer = PostSerializer(posts, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.data)
 
 
 # Helper Functions #
@@ -59,19 +56,19 @@ def user_posts(request, pk):
 def get_all_posts():
     posts = Post.objects.all()
     serializer = PostSerializer(posts, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.data)
 
 
 def get_post_by_id(post):
     serializer = PostSerializer(post)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.data)
 
 
 def create_post(request):
     media_data = request.data.pop('media', None)
 
     if media_data == None or not media_data:
-        return Response({"detail" : "You must provide at least one media file for your post."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail" : "You must provide at least one media file for your post."}, status=status.HTTP_400_BAD_REQUEST)
 
     post_serializer = PostSerializer(data=request.data)
 
@@ -91,15 +88,14 @@ def create_post(request):
 
 def delete_post(post):
     post.delete()
-    return JsonResponse({"detail": "The post has been deleted"}, status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 def edit_post(request, post):
-    data = JSONParser().parse(request)
-    post_serializer = PostSerializer(post, data=data, partial=True)
+    serializer = PostSerializer(post, data=request.data, partial=True)
 
-    if post_serializer.is_valid():
-        post_serializer.save()
-        return Response(post_serializer.data, status=status.HTTP_200_OK)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
 
-    return Response(post_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
