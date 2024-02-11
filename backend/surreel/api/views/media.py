@@ -1,7 +1,5 @@
 from ..serializers import MediaSerializer
 
-# Helper Functions #
-
 def create_media(data, post_id):
     media_limit = 10
     media_counter = 0
