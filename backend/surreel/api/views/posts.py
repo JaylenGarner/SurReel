@@ -9,11 +9,14 @@ from .media import create_media
 
 
 class PostList(APIView):
+
+
     # Currently returns all posts. Will change to return posts for a user's feed.
     def get(self, request):
         posts = Post.objects.all()
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data)
+
 
     def post(self, request):
         media_data = request.data.pop('media', None)
@@ -61,7 +64,10 @@ class PostDetails(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
+    def delete(self, request, id):
+        post = self.get_object(id)
+        post.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 # ''' /<user_id>/posts '''
 
@@ -71,20 +77,3 @@ def user_posts(request, pk):
     posts = Post.objects.filter(user=pk)
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data)
-
-
-
-
-def delete_post(post):
-    post.delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-def edit_post(request, post):
-    serializer = PostSerializer(post, data=request.data, partial=True)
-
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
