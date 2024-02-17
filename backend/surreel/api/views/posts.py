@@ -43,24 +43,24 @@ class PostDetails(APIView):
         post = get_object_or_404(Post, pk=id)
         return post
 
+
     def get(self, request, id):
         post = self.get_object(id)
         serializer = PostSerializer(post)
         return Response(serializer.data)
 
-# @api_view(['GET', 'PATCH', 'DELETE'])
-# @csrf_exempt
-# def post_details(request, pk):
-#     post = get_object_or_404(Post, pk=pk)
 
-#     if request.method == 'GET':
-#        return get_post_by_id(post)
+    def patch(self, request, id):
+        post = self.get_object(id)
+        serializer = PostSerializer(post, data=request.data, partial=True)
 
-#     elif request.method == 'PATCH':
-#         return edit_post(request, post)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
 
-#     elif request.method == 'DELETE':
-#         return delete_post(post)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 # ''' /<user_id>/posts '''
