@@ -10,7 +10,6 @@ from .media import create_media
 
 class PostList(APIView):
 
-
     # Currently returns all posts. Will change to return posts for a user's feed.
     def get(self, request):
         posts = Post.objects.all()
@@ -69,11 +68,10 @@ class PostDetails(APIView):
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-# ''' /<user_id>/posts '''
 
-# @api_view(['GET'])
-@csrf_exempt
-def user_posts(request, pk):
-    posts = Post.objects.filter(user=pk)
-    serializer = PostSerializer(posts, many=True)
-    return Response(serializer.data)
+class UserPosts(APIView):
+
+    def get(self, request, user_id):
+        posts = Post.objects.filter(user=user_id)
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data)
