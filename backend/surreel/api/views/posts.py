@@ -1,4 +1,4 @@
-from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 from rest_framework import status
@@ -8,25 +8,48 @@ from ..serializers import PostSerializer
 from .media import create_media
 
 
+class PostList(APIView):
+    # Currently returns all posts. Will change to return posts for a user's feed.
+    def get(self, request):
+        posts = Post.objects.all()
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data)
 
-# View Functions #
+    def post(self, request):
+        media_data = request.data.pop('media', None)
+
+        if media_data == None or not media_data:
+            return Response({"detail" : "You must provide at least one media file for your post."}, status=status.HTTP_400_BAD_REQUEST)
+
+        post_serializer = PostSerializer(data=request.data)
+
+        if post_serializer.is_valid():
+            post_instance = post_serializer.save()
+
+            media_creation_errors = create_media(media_data, post_instance.id)
+
+            if media_creation_errors is not None:
+                post_instance.delete()
+                return Response(media_creation_errors, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response(post_serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(post_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-''' / '''
+# ''' / '''
 
-@api_view(['GET', 'POST'])
-@csrf_exempt
-def post_list(request):
-    if request.method == 'GET':
-        return get_all_posts()
-
-    elif request.method == 'POST':
-        return create_post(request)
+# @api_view(['GET', 'POST'])
+# @csrf_exempt
 
 
-''' /<post_id> '''
+#     elif request.method == 'POST':
+#         return create_post(request)
 
-@api_view(['GET', 'PATCH', 'DELETE'])
+
+# ''' /<post_id> '''
+
+# @api_view(['GET', 'PATCH', 'DELETE'])
 @csrf_exempt
 def post_details(request, pk):
     post = get_object_or_404(Post, pk=pk)
@@ -41,9 +64,9 @@ def post_details(request, pk):
         return delete_post(post)
 
 
-''' /<user_id>/posts '''
+# ''' /<user_id>/posts '''
 
-@api_view(['GET'])
+# @api_view(['GET'])
 @csrf_exempt
 def user_posts(request, pk):
     posts = Post.objects.filter(user=pk)
@@ -53,37 +76,11 @@ def user_posts(request, pk):
 
 # Helper Functions #
 
-def get_all_posts():
-    posts = Post.objects.all()
-    serializer = PostSerializer(posts, many=True)
-    return Response(serializer.data)
 
 
 def get_post_by_id(post):
     serializer = PostSerializer(post)
     return Response(serializer.data)
-
-
-def create_post(request):
-    media_data = request.data.pop('media', None)
-
-    if media_data == None or not media_data:
-        return Response({"detail" : "You must provide at least one media file for your post."}, status=status.HTTP_400_BAD_REQUEST)
-
-    post_serializer = PostSerializer(data=request.data)
-
-    if post_serializer.is_valid():
-        post_instance = post_serializer.save()
-
-        media_creation_errors = create_media(media_data, post_instance.id)
-
-        if media_creation_errors is not None:
-            post_instance.delete()
-            return Response(media_creation_errors, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response(post_serializer.data, status=status.HTTP_201_CREATED)
-
-    return Response(post_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 def delete_post(post):
