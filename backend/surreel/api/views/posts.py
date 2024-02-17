@@ -37,31 +37,30 @@ class PostList(APIView):
         return Response(post_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# ''' / '''
+class PostDetails(APIView):
 
-# @api_view(['GET', 'POST'])
-# @csrf_exempt
+    def get_object(self, id):
+        post = get_object_or_404(Post, pk=id)
+        return post
 
-
-#     elif request.method == 'POST':
-#         return create_post(request)
-
-
-# ''' /<post_id> '''
+    def get(self, request, id):
+        post = self.get_object(id)
+        serializer = PostSerializer(post)
+        return Response(serializer.data)
 
 # @api_view(['GET', 'PATCH', 'DELETE'])
-@csrf_exempt
-def post_details(request, pk):
-    post = get_object_or_404(Post, pk=pk)
+# @csrf_exempt
+# def post_details(request, pk):
+#     post = get_object_or_404(Post, pk=pk)
 
-    if request.method == 'GET':
-       return get_post_by_id(post)
+#     if request.method == 'GET':
+#        return get_post_by_id(post)
 
-    elif request.method == 'PATCH':
-        return edit_post(request, post)
+#     elif request.method == 'PATCH':
+#         return edit_post(request, post)
 
-    elif request.method == 'DELETE':
-        return delete_post(post)
+#     elif request.method == 'DELETE':
+#         return delete_post(post)
 
 
 # ''' /<user_id>/posts '''
@@ -74,13 +73,6 @@ def user_posts(request, pk):
     return Response(serializer.data)
 
 
-# Helper Functions #
-
-
-
-def get_post_by_id(post):
-    serializer = PostSerializer(post)
-    return Response(serializer.data)
 
 
 def delete_post(post):
