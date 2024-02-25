@@ -41,19 +41,19 @@ class PostList(APIView):
 
 class PostDetails(APIView):
 
-    def get_object(self, id):
-        post = get_object_or_404(Post, pk=id)
+    def get_object(self, post_id):
+        post = get_object_or_404(Post, pk=post_id)
         return post
 
 
-    def get(self, request, id):
-        post = self.get_object(id)
+    def get(self, request, post_id):
+        post = self.get_object(post_id)
         serializer = PostSerializer(post)
         return Response(serializer.data)
 
 
-    def patch(self, request, id):
-        post = self.get_object(id)
+    def patch(self, request, post_id):
+        post = self.get_object(post_id)
         serializer = PostSerializer(post, data=request.data, partial=True)
 
         if serializer.is_valid():
@@ -63,8 +63,8 @@ class PostDetails(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-    def delete(self, request, id):
-        post = self.get_object(id)
+    def delete(self, request, post_id):
+        post = self.get_object(post_id)
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
