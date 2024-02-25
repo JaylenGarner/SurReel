@@ -26,24 +26,25 @@ class MediaSerializer(serializers.ModelSerializer):
         fields = ['id', 'post', 'url']
 
 
+class LikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = ['id', 'user', 'post']
+
+
 class PostSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     media = MediaSerializer(many=True, read_only=True, required=False)
+    likes = LikeSerializer(many=True, read_only=True, required=False)
 
     class Meta:
         model = Post
-        fields = ['id', 'user', 'caption', 'media']
+        fields = ['id', 'user', 'caption', 'media', 'likes']
 
     def to_representation(self, value):
         data = super().to_representation(value)
         data['user'] = UserSerializer(value.user).data
         return data
-
-
-class LikeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Like
-        fields = ['id', 'user', 'post']
 
 
 class FollowSerializer(serializers.ModelSerializer):
