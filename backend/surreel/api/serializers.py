@@ -35,7 +35,9 @@ class LikeSerializer(serializers.ModelSerializer):
 
     def to_representation(self, value):
         data = super().to_representation(value)
-        data['user'] = UserSerializer(value.user).data
+        user = UserSerializer(value.user).data
+        data['user'] = user
+        data['user_id'] = user['id']
         return data
 
 

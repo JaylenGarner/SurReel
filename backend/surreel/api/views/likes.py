@@ -1,5 +1,4 @@
 from rest_framework.views import APIView
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
@@ -7,11 +6,10 @@ from ..models import Like
 from ..serializers import LikeSerializer
 
 
-class LikeList(APIView):
+class LikePost(APIView):
 
     def post(self, request, post_id):
         request.data['post'] = post_id
-        print('REQUEST', request.data)
         serializer = LikeSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -21,13 +19,14 @@ class LikeList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class LikeDetails(APIView):
+class UnlikePost(APIView):
 
-    def get_object(self, like_id):
-        like = get_object_or_404(Like, pk=like_id)
+    def get_object(self, post_id, user_id):
+        like = Like.objects.filter(post=post_id, user_id=user_id)
         return like
 
-    def delete(self, request, like_id):
-        like = self.get_object(like_id)
+    def delete(self, request, post_id):
+        user_id = request.data['user']
+        like = self.get_object(post_id, user_id)
         like.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
