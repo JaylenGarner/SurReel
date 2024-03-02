@@ -6,15 +6,22 @@ from django.shortcuts import get_object_or_404
 from ..models import Post
 from ..serializers import PostSerializer
 from .media import create_media
+from rest_framework import generics
+from rest_framework import mixins
 
 
-class PostList(APIView):
+class PostList(generics.GenericAPIView, mixins.ListModelMixin, APIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+
+    def get(self, request):
+        return self.list(request)
 
     # Currently returns all posts. Will change to return posts for a user's feed.
-    def get(self, request):
-        posts = Post.objects.all()
-        serializer = PostSerializer(posts, many=True)
-        return Response(serializer.data)
+    # def get(self, request):
+    #     posts = Post.objects.all()
+    #     serializer = PostSerializer(posts, many=True)
+    #     return Response(serializer.data)
 
 
     def post(self, request):
