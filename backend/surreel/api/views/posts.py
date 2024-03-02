@@ -43,7 +43,7 @@ class PostDetails(generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.Upd
 
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    lookup_url_kwarg = 'id'
+    lookup_field = 'id'
 
     def get(self, request, id):
         return self.retrieve(request, id)

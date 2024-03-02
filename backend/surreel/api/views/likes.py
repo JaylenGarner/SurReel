@@ -4,29 +4,27 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from ..models import Like
 from ..serializers import LikeSerializer
+from rest_framework import generics
+from rest_framework import mixins
 
 
-class LikePost(APIView):
+class LikePost(generics.GenericAPIView, mixins.CreateModelMixin):
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
 
     def post(self, request, post_id):
         request.data['post'] = post_id
-        serializer = LikeSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return self.create(request, post=post_id)
 
 
-class UnlikePost(APIView):
+class UnlikePost(generics.GenericAPIView, mixins.DestroyModelMixin):
+    serializer_class = LikeSerializer
+    lookup_field = 'post_id'
 
-    def get_object(self, post_id, user_id):
-        like = Like.objects.filter(post=post_id, user_id=user_id)
-        return like
+    def get_queryset(self):
+        post_id = self.kwargs.get('post_id')
+        user_id = self.request.data.get('user')
+        return Like.objects.filter(post=post_id, user=user_id)
 
-    def delete(self, request, post_id):
-        user_id = request.data['user']
-        like = self.get_object(post_id, user_id)
-        like.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
