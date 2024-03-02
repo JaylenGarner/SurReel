@@ -44,17 +44,19 @@ class LikeSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     media = MediaSerializer(many=True, read_only=True, required=False)
-    likes = LikeSerializer(many=True, read_only=True, required=False)
+    like_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['id', 'user', 'caption', 'media', 'likes']
+        fields = ['id', 'user', 'caption', 'media', 'like_count']
+
+    def get_like_count(self, instance):
+        return instance.likes.count()
 
     def to_representation(self, value):
         data = super().to_representation(value)
         data['user'] = UserSerializer(value.user).data
         return data
-
 
 class FollowSerializer(serializers.ModelSerializer):
     class Meta:

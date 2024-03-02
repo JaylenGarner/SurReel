@@ -39,42 +39,25 @@ class PostList(generics.GenericAPIView, mixins.ListModelMixin):
         return Response(post_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class PostDetails(generics.GenericAPIView):
+class PostDetails(generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
 
-    def get_object(self, post_id):
-        post = get_object_or_404(Post, pk=post_id)
-        return post
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    lookup_url_kwarg = 'id'
 
+    def get(self, request, id):
+        return self.retrieve(request, id)
 
-    def get(self, request, post_id):
-        post = self.get_object(post_id)
-        serializer = PostSerializer(post)
-        return Response(serializer.data)
+    def patch(self, request, id):
+        return self.update(request, id)
 
-
-    def patch(self, request, post_id):
-        post = self.get_object(post_id)
-        serializer = PostSerializer(post, data=request.data, partial=True)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-    def delete(self, request, post_id):
-        post = self.get_object(post_id)
-        post.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def delete(self, request, id):
+        return self.destroy(request, id)
 
 
 class UserPosts(generics.GenericAPIView, mixins.ListModelMixin):
+    queryset = Post.objects.all()
     serializer_class = PostSerializer
 
-    def get_queryset(self):
-        user_id = self.kwargs.get('user_id')
-        return Post.objects.filter(user=user_id)
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
+    def get(self, request, user_id):
+        return self.list(request, user=user_id)
