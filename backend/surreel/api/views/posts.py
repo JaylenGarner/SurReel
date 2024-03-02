@@ -1,4 +1,3 @@
-from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 from rest_framework import status
@@ -10,18 +9,12 @@ from rest_framework import generics
 from rest_framework import mixins
 
 
-class PostList(generics.GenericAPIView, mixins.ListModelMixin, APIView):
+class PostList(generics.GenericAPIView, mixins.ListModelMixin):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 
     def get(self, request):
         return self.list(request)
-
-    # Currently returns all posts. Will change to return posts for a user's feed.
-    # def get(self, request):
-    #     posts = Post.objects.all()
-    #     serializer = PostSerializer(posts, many=True)
-    #     return Response(serializer.data)
 
 
     def post(self, request):
@@ -46,7 +39,7 @@ class PostList(generics.GenericAPIView, mixins.ListModelMixin, APIView):
         return Response(post_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class PostDetails(APIView):
+class PostDetails(generics.GenericAPIView):
 
     def get_object(self, post_id):
         post = get_object_or_404(Post, pk=post_id)
@@ -76,9 +69,12 @@ class PostDetails(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class UserPosts(APIView):
+class UserPosts(generics.GenericAPIView, mixins.ListModelMixin):
+    serializer_class = PostSerializer
 
-    def get(self, request, user_id):
-        posts = Post.objects.filter(user=user_id)
-        serializer = PostSerializer(posts, many=True)
-        return Response(serializer.data)
+    def get_queryset(self):
+        user_id = self.kwargs.get('user_id')
+        return Post.objects.filter(user=user_id)
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
